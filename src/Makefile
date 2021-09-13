@@ -35,6 +35,7 @@ SRCS += $(RES)
 CFLAGS += -posix
 CFLAGS += -Dffs=__builtin_ffs
 CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
+CFLAGS += -fexec-charset=GBK
 endif
 
 $(PKG): $(TARGET)$(EXEC_SUFFIX)
