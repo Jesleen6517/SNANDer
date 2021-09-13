@@ -39,10 +39,10 @@ extern char eepromname[12];
 extern int eepromsize;
 extern int mw_eepromsize;
 extern int org;
-#define EHELP	" -E             select I2C EEPROM {24c01|24c02|24c04|24c08|24c16|24c32|24c64|24c128|24c256|24c512|24c1024}\n" \
-		"                select Microwire EEPROM {93c06|93c16|93c46|93c56|93c66|93c76|93c86|93c96} (need SPI-to-MW adapter)\n" \
-		" -8             set organization 8-bit for Microwire EEPROM(default 16-bit) and set jumper on SPI-to-MW adapter\n" \
-		" -f <addr len>  set manual address size in bits for Microwire EEPROM(default auto)\n"
+#define EHELP	" -E             选取 I2C EEPROM {24c01|24c02|24c04|24c08|24c16|24c32|24c64|24c128|24c256|24c512|24c1024}\n" \
+		"                选取 Microwire EEPROM {93c06|93c16|93c46|93c56|93c66|93c76|93c86|93c96} (需要 SPI-to-MW 转接板)\n" \
+		" -8             为 Microwire EEPROM 设定 8 位组织标识 (默认 16 位) 并在 SPI-to-MW 转接板上正确设置跳线\n" \
+		" -f <addr len>  以位为单位为 Microwire EEPROM 手动设置地址大小 (默认为自动)\n"
 #else
 #define EHELP	""
 #endif
@@ -52,28 +52,28 @@ extern int org;
 void title(void)
 {
 #ifdef EEPROM_SUPPORT
-	printf("\nSNANDer - Serial Nor/nAND/Eeprom programmeR v." _VER " by McMCC <mcmcc@mail.ru>\n\n");
+	printf("\nSNANDer - 串行 NOR/NAND/EEPROM 编程器 v." _VER " by McMCC <mcmcc@mail.ru>\n\n");
 #else
-	printf("\nSNANDer - Spi Nor/nAND programmER v." _VER " by McMCC <mcmcc@mail.ru>\n\n");
+	printf("\nSNANDer - SPI NOR/NAND 编程器 v." _VER " by McMCC <mcmcc@mail.ru>\n\n");
 #endif
 }
 
 void usage(void)
 {
 	const char use[] =
-		"  Usage:\n"\
-		" -h             display this message\n"\
-		" -d             disable internal ECC(use read and write page size + OOB size)\n"\
-		" -I             ECC ignore errors(for read test only)\n"\
-		" -L             print list support chips\n"\
-		" -i             read the chip ID info\n"\
+		"  用法:\n"\
+		" -h             显示用法\n"\
+		" -d             禁用内部ECC(使用读写页大小+OOB大小)\n"\
+		" -I             忽略ECC错误(仅用于读取测试)\n"\
+		" -L             打印支持的芯片列表\n"\
+		" -i             读取芯片ID信息\n"\
 		"" EHELP ""\
-		" -e             erase chip(full or use with -a [-l])\n"\
-		" -l <bytes>     manually set length\n"\
-		" -a <address>   manually set address\n"\
-		" -w <filename>  write chip with data from filename\n"\
-		" -r <filename>  read chip and save data to filename\n"\
-		" -v             verify after write on chip\n";
+		" -e             擦除芯片(全片擦除或使用-a [-l]参数)\n"\
+		" -l <偏移量>    手动设定偏移量\n"\
+		" -a <地址>      手动设定地址\n"\
+		" -w <文件名>    写入数据到芯片\n"\
+		" -r <文件名>    读取数据到文件\n"\
+		" -v             写入后校验\n";
 	printf(use);
 	exit(0);
 }
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 					memset(eepromname, 0, sizeof(eepromname));
 					strncpy(eepromname, optarg, 10);
 					if (len > eepromsize) {
-						printf("Error set size %lld, max size %d for EEPROM %s!!!\n", len, eepromsize, eepromname);
+						printf("偏移量设定错误 %lld, EEPROM %s 的大小为 %d!!!\n", len, eepromname, eepromsize);
 						exit(0);
 					}
 				} else if ((mw_eepromsize = deviceSize_3wire(optarg)) > 0) {
@@ -110,18 +110,18 @@ int main(int argc, char* argv[])
 					strncpy(eepromname, optarg, 10);
 					org = 1;
 					if (len > mw_eepromsize) {
-						printf("Error set size %lld, max size %d for EEPROM %s!!!\n", len, mw_eepromsize, eepromname);
+						printf("偏移量设定错误 %lld, EEPROM %s 的大小为 %d!!!\n", len, eepromname, mw_eepromsize);
 						exit(0);
 					}
 				} else {
-					printf("Unknown EEPROM chip %s!!!\n", optarg);
+					printf("未知的 EEPROM 芯片 %s!!!\n", optarg);
 					exit(0);
 				}
 				break;
 			case '8':
 				if (mw_eepromsize <= 0)
 				{
-					printf("-8 option only for Microwire EEPROM chips!!!\n");
+					printf("-8 参数仅用于 Microwire EEPROM 芯片!!!\n");
 					exit(0);
 				}
 				org = 0;
@@ -129,13 +129,13 @@ int main(int argc, char* argv[])
 			case 'f':
 				if (mw_eepromsize <= 0)
 				{
-					printf("-f option only for Microwire EEPROM chips!!!\n");
+					printf("-f 参数仅用于 Microwire EEPROM 芯片!!!\n");
 					exit(0);
 				}
 				str = strdup(optarg);
 				fix_addr_len = strtoll(str, NULL, *str && *(str + 1) == 'x' ? 16 : 10);
 				if (fix_addr_len > 32) {
-						printf("Address len is very big!!!\n");
+						printf("地址长度过大!!!\n");
 						exit(0);
 				}
 				break;
@@ -185,12 +185,12 @@ int main(int argc, char* argv[])
 	if (op == 0) usage();
 
 	if (op == 'x' || (ECC_ignore && !ECC_fcheck) || (op == 'w' && ECC_ignore)) {
-		printf("Conflicting options, only one option at a time.\n\n");
+		printf("参数冲突, 只能选取其中一个.\n\n");
 		return -1;
 	}
 
 	if (ch341a_spi_init() < 0) {
-		printf("Programmer device not found!\n\n");
+		printf("未找到编程器!\n\n");
 		return -1;
 	}
 
@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
 
 #ifdef EEPROM_SUPPORT
 	if ((eepromsize || mw_eepromsize) && op == 'i') {
-		printf("Programmer not supported auto detect EEPROM!\n\n");
+		printf("不支持自动检测EEPROM!\n\n");
 		goto out;
 	}
 #else
@@ -207,12 +207,12 @@ int main(int argc, char* argv[])
 #endif
 
 	if (op == 'e') {
-		printf("ERASE:\n");
+		printf("擦除:\n");
 		if(addr && !len)
 			len = flen - addr;
 		else if(!addr && !len) {
 			len = flen;
-			printf("Set full erase chip!\n");
+			printf("默认进行全片擦除!\n");
 		}
 		if(len % bsize) {
 			printf("Please set len = 0x%016llX multiple of the block size 0x%08X\n", len, bsize);
@@ -221,9 +221,9 @@ int main(int argc, char* argv[])
 		printf("Erase addr = 0x%016llX, len = 0x%016llX\n", addr, len);
 		ret = prog.flash_erase(addr, len);
 		if(!ret)
-			printf("Status: OK\n");
+			printf("Status: 成功\n");
 		else
-			printf("Status: BAD(%d)\n", ret);
+			printf("Status: 错误(%d)\n", ret);
 		goto out;
 	}
 
@@ -235,22 +235,22 @@ int main(int argc, char* argv[])
 		}
 		buf = (unsigned char *)malloc(len + 1);
 		if (!buf) {
-			printf("Malloc failed for read buffer.\n");
+			printf("读取缓冲区失败.\n");
 			goto out;
 		}
 	}
 
 	if (op == 'w') {
-		printf("WRITE:\n");
+		printf("写入:\n");
 		fp = fopen(fname, "rb");
 		if (!fp) {
-			printf("Couldn't open file %s for reading.\n", fname);
+			printf("无法打开文件 %s.\n", fname);
 			free(buf);
 			goto out;
 		}
 		wlen = fread(buf, 1, len, fp);
 		if (ferror(fp)) {
-			printf("Error reading file [%s]\n", fname);
+			printf("读取文件出错 [%s]\n", fname);
 			if (fp)
 				fclose(fp);
 			free(buf);
@@ -261,28 +261,28 @@ int main(int argc, char* argv[])
 		printf("Write addr = 0x%016llX, len = 0x%016llX\n", addr, len);
 		ret = prog.flash_write(buf, addr, len);
 		if(ret > 0) {
-			printf("Status: OK\n");
+			printf("Status: 成功\n");
 			if (vr) {
 				op = 'r';
 				svr = 1;
-				printf("VERIFY:\n");
+				printf("校验:\n");
 				goto very;
 			}
 		}
 		else
-			printf("Status: BAD(%d)\n", ret);
+			printf("Status: 错误(%d)\n", ret);
 		fclose(fp);
 		free(buf);
 	}
 
 very:
 	if (op == 'r') {
-		if (!svr) printf("READ:\n");
+		if (!svr) printf("读取:\n");
 		else memset(buf, 0, len);
 		printf("Read addr = 0x%016llX, len = 0x%016llX\n", addr, len);
 		ret = prog.flash_read(buf, addr, len);
 		if (ret < 0) {
-			printf("Status: BAD(%d)\n", ret);
+			printf("Status: 错误(%d)\n", ret);
 			free(buf);
 			goto out;
 		}
@@ -297,25 +297,25 @@ very:
 				ch1 = (unsigned char)getc(fp);
 
 			if (ch1 == buf[i])
-				printf("Status: OK\n");
+				printf("Status: 成功\n");
 			else
-				printf("Status: BAD\n");
+				printf("Status: 失败\n");
 			fclose(fp);
 			free(buf);
 			goto out;
 		}
 		fp = fopen(fname, "wb");
 		if (!fp) {
-			printf("Couldn't open file %s for writing.\n", fname);
+			printf("无法打开文件 %s.\n", fname);
 			free(buf);
 			goto out;
 		}
 		fwrite(buf, 1, len, fp);
 		if (ferror(fp))
-			printf("Error writing file [%s]\n", fname);
+			printf("写入文件出错 [%s]\n", fname);
 		fclose(fp);
 		free(buf);
-		printf("Status: OK\n");
+		printf("Status: 成功\n");
 	}
 
 out:
