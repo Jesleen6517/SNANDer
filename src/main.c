@@ -42,7 +42,7 @@ extern int org;
 #define EHELP	" -E             选取 I2C EEPROM {24c01|24c02|24c04|24c08|24c16|24c32|24c64|24c128|24c256|24c512|24c1024}\n" \
 		"                选取 Microwire EEPROM {93c06|93c16|93c46|93c56|93c66|93c76|93c86|93c96} (需要 SPI-to-MW 转接板)\n" \
 		" -8             为 Microwire EEPROM 设定 8 位组织标识 (默认 16 位) 并在 SPI-to-MW 转接板上正确设置跳线\n" \
-		" -f <addr len>  为 Microwire EEPROM 设定地址及偏移量, 以位为单位 (默认为自动)\n"
+		" -f <地址长度>   为 Microwire EEPROM 设定地址长度, 以位为单位 (默认为自动)\n"
 #else
 #define EHELP	""
 #endif
